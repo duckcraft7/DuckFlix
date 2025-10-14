@@ -39,4 +39,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: duckflix-app-ipk # O nome do arquivo que você verá para baixar
-          path: com.duckcraft7.duckflix_1.0.0_all.ipk # O nome exato do arquivo gerado
+          path: com.duckflix.app_1.0.0_all.ipk # O nome exato do arquivo gerado
