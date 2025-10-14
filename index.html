@@ -8,8 +8,26 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos para o nosso console de depuração na tela */
+        #debug-log {
+            position: fixed; /* Fica fixo na tela mesmo rolando a página */
+            bottom: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.8); /* Fundo preto semitransparente */
+            color: #00ff00; /* Letras verde-limão, estilo hacker */
+            padding: 10px;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 16px;
+            z-index: 9999; /* Garante que fique na frente de tudo */
+        }
+    </style>
 </head>
 <body>
+
+    <div id="debug-log">Iniciando depuração...</div>
 
     <header class="main-header">
         <h1>DuckFlix</h1>
@@ -38,9 +56,23 @@
     </footer>
 
     <script>
-        // Este código está agora DENTRO do HTML.
-        // É um teste para garantir que o JavaScript está sendo executado.
-        alert("TESTE DIRETO NO HTML FUNCIONOU!");
+        // Pega o nosso elemento de log na tela.
+        const log = document.getElementById('debug-log');
+
+        // Função para escrever mensagens no nosso log.
+        function writeToLog(message) {
+            log.textContent = message;
+            console.log(message); // Também envia para o console do navegador
+        }
+
+        // Mensagem inicial para confirmar que o script carregou.
+        writeToLog('SCRIPT CARREGADO! Pronto para receber comandos.');
+
+        // "Ouvinte" de eventos: fica esperando uma tecla ser pressionada.
+        document.addEventListener('keydown', (event) => {
+            // Quando uma tecla é pressionada, mostra o nome dela no nosso log na tela!
+            writeToLog('Tecla Pressionada: ' + event.key);
+        });
     </script>
     </body>
 </html>
