@@ -1,0 +1,10 @@
+{
+  "id": "com.duckflix.app",
+  "version": "1.0.0",
+  "vendor": "DuckCraft Studios",
+  "type": "web",
+  "main": "index.html",
+  "title": "DuckFlix",
+  "icon": "icon.png",
+  "uiRevision": 2
+}
