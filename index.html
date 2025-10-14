@@ -9,25 +9,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
     <style>
-        /* Estilos para o nosso console de depuração na tela */
-        #debug-log {
-            position: fixed; /* Fica fixo na tela mesmo rolando a página */
-            bottom: 10px;
-            left: 10px;
-            background-color: rgba(0, 0, 0, 0.8); /* Fundo preto semitransparente */
-            color: #00ff00; /* Letras verde-limão, estilo hacker */
-            padding: 10px;
-            border: 1px solid #00ff00;
-            border-radius: 5px;
-            font-family: monospace;
-            font-size: 16px;
-            z-index: 9999; /* Garante que fique na frente de tudo */
+        /* Estilo para o card de filme em foco (selecionado pelo controle) */
+        .movie-card.focused {
+            transform: scale(1.08); /* Aumenta um pouco o tamanho */
+            border: 4px solid #FFD700; /* Borda amarela forte */
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.7); /* Adiciona um brilho amarelo */
+            z-index: 10;
         }
     </style>
 </head>
 <body>
-
-    <div id="debug-log">Iniciando depuração...</div>
 
     <header class="main-header">
         <h1>DuckFlix</h1>
@@ -47,6 +38,21 @@
                     </div>
                 </a>
 
+                <a class="movie-card" href="player-notld.html" target="_blank">
+                    <img src="https://www.themoviedb.org/t/p/w600_and_h900_bestv2/uXVg3n1iG9k3M2sQ53DCj1fijc.jpg" alt="Pôster do Filme A Noite dos Mortos-Vivos">
+                    <div class="movie-info">
+                        <h3>A Noite dos Mortos-Vivos</h3>
+                        <p>1968</p>
+                    </div>
+                </a>
+                <a class="movie-card" href="player-nosferatu.html" target="_blank">
+                    <img src="https://www.themoviedb.org/t/p/w600_and_h900_bestv2/2i2s309y0wlal3c2vAlv2IStsA8.jpg" alt="Pôster do Filme Nosferatu">
+                    <div class="movie-info">
+                        <h3>Nosferatu</h3>
+                        <p>1922</p>
+                    </div>
+                </a>
+
             </div>
         </section>
     </main>
@@ -56,22 +62,75 @@
     </footer>
 
     <script>
-        // Pega o nosso elemento de log na tela.
-        const log = document.getElementById('debug-log');
+        // Espera a página HTML carregar completamente antes de rodar o código.
+        document.addEventListener('DOMContentLoaded', () => {
 
-        // Função para escrever mensagens no nosso log.
-        function writeToLog(message) {
-            log.textContent = message;
-            console.log(message); // Também envia para o console do navegador
-        }
+            // Pega todos os cards de filme da página e os coloca em uma lista.
+            const movieCards = document.querySelectorAll('.movie-card');
+            
+            // Se não houver filmes na página, não faz nada.
+            if (movieCards.length === 0) {
+                return;
+            }
 
-        // Mensagem inicial para confirmar que o script carregou.
-        writeToLog('SCRIPT CARREGADO! Pronto para receber comandos.');
+            // Começamos com o primeiro filme selecionado (índice 0).
+            let currentFocusIndex = 0;
 
-        // "Ouvinte" de eventos: fica esperando uma tecla ser pressionada.
-        document.addEventListener('keydown', (event) => {
-            // Quando uma tecla é pressionada, mostra o nome dela no nosso log na tela!
-            writeToLog('Tecla Pressionada: ' + event.key);
+            // Função para definir qual elemento está em foco.
+            const setFocus = (index) => {
+                // Remove o foco do elemento antigo, se houver.
+                movieCards[currentFocusIndex].classList.remove('focused');
+                
+                // Atualiza o índice para o novo elemento.
+                currentFocusIndex = index;
+                
+                // Adiciona a classe .focused ao novo elemento para destacá-lo.
+                movieCards[currentFocusIndex].classList.add('focused');
+
+                // Faz a página rolar para que o elemento em foco esteja sempre visível.
+                movieCards[currentFocusIndex].scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            };
+
+            // "Ouvinte" de eventos: fica esperando uma tecla ser pressionada.
+            document.addEventListener('keydown', (event) => {
+                // Pega o número de colunas na grade de filmes para pular linhas corretamente.
+                const grid = document.querySelector('.movie-grid');
+                const gridStyle = window.getComputedStyle(grid);
+                const gridColumnCount = gridStyle.getPropertyValue('grid-template-columns').split(' ').length;
+
+                switch (event.key) {
+                    case 'ArrowRight':
+                        if (currentFocusIndex < movieCards.length - 1) {
+                            setFocus(currentFocusIndex + 1);
+                        }
+                        break;
+                    case 'ArrowLeft':
+                        if (currentFocusIndex > 0) {
+                            setFocus(currentFocusIndex - 1);
+                        }
+                        break;
+                    case 'ArrowDown':
+                        if (currentFocusIndex + gridColumnCount < movieCards.length) {
+                            setFocus(currentFocusIndex + gridColumnCount);
+                        }
+                        break;
+                    case 'ArrowUp':
+                        if (currentFocusIndex - gridColumnCount >= 0) {
+                            setFocus(currentFocusIndex - gridColumnCount);
+                        }
+                        break;
+                    case 'Enter':
+                        // Se pressionar "Enter" (o botão OK), simula um clique no filme focado.
+                        movieCards[currentFocusIndex].click();
+                        break;
+                }
+            });
+
+            // Define o foco inicial no primeiro filme quando a página carrega.
+            setFocus(0);
         });
     </script>
     </body>
