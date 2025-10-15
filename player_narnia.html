@@ -22,10 +22,34 @@
 </head>
 <body>
 
-    <video controls autoplay poster="https://ia601002.us.archive.org/14/items/cronicas-de-narnia-01/Cronicas%20de%20Narnia%2001.jpg">
+    <video id="movie-player" controls autoplay>
         <source src="https://archive.org/download/narnia-pt-br/As.Cr%C3%B4nicas.de.N%C3%A1rnia.O.Le%C3%A3o.a.Feiticeira.e.o.Guarda.Roupa.2005.720p.BluRay.5.1.x264.DUAL-WWW.BLUDV.COM.mp4" type="video/mp4">
         Seu navegador não suporta a tag de vídeo.
     </video>
 
-</body>
+    <script>
+        // Pega o elemento de vídeo pelo seu ID único.
+        const player = document.getElementById('movie-player');
+
+        // "Ouve" por qualquer tecla pressionada no documento.
+        document.addEventListener('keydown', (event) => {
+            
+            // Verifica se a tecla pressionada foi 'Enter' (o botão OK).
+            if (event.key === 'Enter') {
+
+                // Impede que o navegador execute a ação padrão do Enter (que pode ser nada).
+                event.preventDefault();
+
+                // Verifica se o vídeo está pausado.
+                if (player.paused) {
+                    // Se estiver pausado, toque o vídeo.
+                    player.play();
+                } else {
+                    // Se estiver tocando, pause o vídeo.
+                    player.pause();
+                }
+            }
+        });
+    </script>
+    </body>
 </html>
