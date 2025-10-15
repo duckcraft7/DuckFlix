@@ -3,38 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assistindo: A Noite dos Mortos-Vivos - DuckFlix</title>
+    <title>Assistindo: Cronicas de Narnia: Leão e a Feiticeira do Guarda Roupa - DuckFlix</title>
     <style>
-        /* Estilos básicos para a página do player */
+        /* Estilos para garantir que o vídeo ocupe a tela inteira */
         body, html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
-            background-color: #000; /* Fundo preto para imersão */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: sans-serif;
-            color: white;
+            background-color: #000; /* Fundo preto para imersão total */
+            overflow: hidden; /* Esconde barras de rolagem */
         }
-        .player-container {
-            width: 100%;
-            max-width: 1280px; /* Limita a largura máxima em telas grandes */
-            height: 100%;
-        }
-        iframe {
+        video {
             width: 100%;
             height: 100%;
-            border: none;
         }
     </style>
 </head>
 <body>
 
-    <div class="player-container">
-        <iframe src="https://archive.org/embed/narnia-pt-br" frameborder="0" webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen></iframe>
-    </div>
+    <video controls autoplay poster="https://ia601002.us.archive.org/14/items/cronicas-de-narnia-01/Cronicas%20de%20Narnia%2001.jpg">
+        <source src="https://archive.org/download/narnia-pt-br/As.Cr%C3%B4nicas.de.N%C3%A1rnia.O.Le%C3%A3o.a.Feiticeira.e.o.Guarda.Roupa.2005.720p.BluRay.5.1.x264.DUAL-WWW.BLUDV.COM.mp4" type="video/mp4">
+        Seu navegador não suporta a tag de vídeo.
+    </video>
 
 </body>
 </html>
