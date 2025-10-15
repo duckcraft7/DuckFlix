@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistindo: A Era do Gelo 1 - DuckFlix</title>
+    <style>
+        /* Estilos para garantir que o vídeo ocupe a tela inteira */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000; /* Fundo preto para imersão total */
+            overflow: hidden; /* Esconde barras de rolagem */
+        }
+        video {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <video id="movie-player" controls autoplay>
+        <source src="https://jobin-bro-143-02-7e44d11483ed.herokuapp.com//dl/24957?code=36987d13c026a79fe2200e47afdf00d91b20e21f27a47321" type="video/mp4">
+        Seu navegador não suporta a tag de vídeo.
+    </video>
+
+    <script>
+        // Pega o elemento de vídeo pelo seu ID único.
+        const player = document.getElementById('movie-player');
+
+        // "Ouve" por qualquer tecla pressionada no documento.
+        document.addEventListener('keydown', (event) => {
+            
+            // Verifica se a tecla pressionada foi 'Enter' (o botão OK).
+            if (event.key === 'Enter') {
+
+                // Impede que o navegador execute a ação padrão do Enter (que pode ser nada).
+                event.preventDefault();
+
+                // Verifica se o vídeo está pausado.
+                if (player.paused) {
+                    // Se estiver pausado, toque o vídeo.
+                    player.play();
+                } else {
+                    // Se estiver tocando, pause o vídeo.
+                    player.pause();
+                }
+            }
+        });
+    </script>
+    </body>
+</html>
