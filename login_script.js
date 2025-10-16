@@ -1,45 +1,38 @@
 // --- ÁREA DE CONFIGURAÇÃO DE CLIENTES ---
 const USUARIOS_VALIDOS = {
     "familia": "marique10",
+    "joao_silva": "abc@456",
+    "maria_souza": "minhasenha_forte",
+    "usuario_teste": "12345"
 };
 // -----------------------------------------
 
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
     const errorMessage = document.getElementById('error-message');
-    
-    // Pega todos os elementos que podem ser focados (campos e botão)
     const focusableElements = document.querySelectorAll('.focusable');
-    let currentFocusIndex = 0; // Começa no primeiro elemento (campo de usuário)
+    let currentFocusIndex = 0;
 
-    // Função para definir o foco visual
     const setFocus = (index) => {
-        // Remove o foco do elemento antigo
         focusableElements[currentFocusIndex].classList.remove('focused');
-        
-        // Atualiza o índice e adiciona o foco ao novo elemento
         currentFocusIndex = index;
         focusableElements[currentFocusIndex].classList.add('focused');
-        focusableElements[currentFocusIndex].focus(); // Foco real para digitação
+        focusableElements[currentFocusIndex].focus();
     };
 
-    // "Ouve" as teclas do controle remoto
     document.addEventListener('keydown', (event) => {
         switch (event.key) {
             case 'ArrowDown':
-                // Se a seta para baixo for pressionada, move o foco para o próximo item
                 if (currentFocusIndex < focusableElements.length - 1) {
                     setFocus(currentFocusIndex + 1);
                 }
                 break;
             case 'ArrowUp':
-                // Se a seta para cima for pressionada, move o foco para o item anterior
                 if (currentFocusIndex > 0) {
                     setFocus(currentFocusIndex - 1);
                 }
                 break;
-            case 'Enter': // O botão "OK" do controle
-                // Se o foco estiver no botão de login, envia o formulário
+            case 'Enter':
                 if (focusableElements[currentFocusIndex].id === 'login-button') {
                     loginForm.dispatchEvent(new Event('submit'));
                 }
@@ -47,21 +40,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Função que verifica o login quando o formulário é enviado
     loginForm.addEventListener('submit', (event) => {
-        event.preventDefault(); // Impede o recarregamento da página
+        event.preventDefault();
         const usuario = document.getElementById('usuario').value;
         const senha = document.getElementById('senha').value;
 
         if (USUARIOS_VALIDOS[usuario] && USUARIOS_VALIDOS[usuario] === senha) {
+            
+            // LINHA ADICIONADA - Salva na "memória" que o login foi bem-sucedido
+            localStorage.setItem('duckflix_isLoggedIn', 'true');
+            
             // SUCESSO! Redireciona para a sua tela de filmes
             window.location.href = 'home.html';
         } else {
-            // ERRO! Mostra a mensagem
             errorMessage.textContent = 'Usuário ou senha inválidos.';
         }
     });
 
-    // Define o foco inicial no campo de usuário quando o app abre
     setFocus(0);
 });
+
