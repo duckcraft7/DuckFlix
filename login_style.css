@@ -6,103 +6,70 @@
 }
 
 body {
-    background-color: #141414; /* Cor de fundo principal (preto Netflix) */
-    color: #ffffff; /* Cor do texto principal (branco) */
-    font-family: Arial, sans-serif;
-}
-
-/* Cabeçalho com o logo */
-.main-header {
-    padding: 40px 20px;
-    background-color: #000000;
-    text-align: center;
-    border-bottom: 4px solid #FFD700; /* Linha amarela de destaque */
-}
-
-.main-header h1 {
-    color: #FFD700; /* Nosso amarelo ouro! */
-    font-family: 'Bebas Neue', sans-serif; /* Fonte de impacto */
-    font-size: 4em;
-    letter-spacing: 3px;
-}
-
-.main-header p {
-    color: #ccc;
-    font-size: 1.1em;
-    margin-top: 5px;
-}
-
-/* Conteúdo principal */
-main {
-    padding: 20px;
-}
-
-.movie-section h2 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 2.5em;
-    margin-bottom: 20px;
+    background-color: #141414; /* Preto de fundo */
     color: #ffffff;
-    border-left: 5px solid #FFD700; /* Detalhe amarelo no título da seção */
-    padding-left: 10px;
-}
-
-/* A grade de filmes */
-.movie-grid {
-    display: grid;
-    /* Isso cria colunas que se ajustam ao tamanho da tela! */
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 20px; /* Espaço entre os pôsteres */
-}
-
-/* Cartão de cada filme (agora é um link) */
-.movie-card {
-    background-color: #222;
-    border-radius: 5px;
-    overflow: hidden; /* Garante que a imagem não saia da borda */
-    border: 1px solid #333;
-    transition: transform 0.3s, border-color 0.3s;
-    text-decoration: none; /* Remove o sublinhado do link */
-    color: white;
+    font-family: Arial, sans-serif;
     display: flex;
-    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Ocupa a tela inteira */
 }
 
-.movie-card:hover {
-    transform: scale(1.05); /* Efeito ao passar o mouse */
-    border-color: #FFD700; /* Borda amarela ao destacar */
+.login-container {
+    background-color: #000000;
+    padding: 50px 60px;
+    border-radius: 8px;
+    text-align: center;
+    width: 350px;
+    border-top: 4px solid #FFD700; /* Detalhe amarelo em cima */
 }
 
-.movie-card img {
+.logo {
+    color: #FFD700; /* Amarelo ouro! */
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 4.5em;
+    letter-spacing: 3px;
+    margin-bottom: 30px;
+}
+
+input {
     width: 100%;
-    height: auto;
-    display: block;
-    aspect-ratio: 2/3; /* Proporção clássica de pôster */
-    object-fit: cover;
-}
-
-.movie-card .movie-info {
-    padding: 10px;
-    text-align: center;
-    flex-grow: 1; /* Faz esta área crescer para alinhar os cards */
-}
-
-.movie-card .movie-info h3 {
+    padding: 16px;
+    margin-bottom: 15px;
+    border: 1px solid #333;
+    border-radius: 5px;
+    background-color: #333;
+    color: #fff;
     font-size: 1em;
-    margin: 0;
 }
 
-.movie-card .movie-info p {
-    font-size: 0.8em;
-    color: #aaa;
-    margin-top: 5px;
+button {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 5px;
+    background-color: #FFD700; /* Botão amarelo */
+    color: #000; /* Texto preto para contrastar */
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
 }
 
-/* Rodapé */
-.main-footer {
-    text-align: center;
-    padding: 20px;
-    margin-top: 40px;
-    border-top: 1px solid #333;
-    font-size: 0.9em;
-    color: #777;
+#error-message {
+    margin-top: 20px;
+    color: #e87c03; /* Laranja para avisos */
+    height: 20px; /* Garante que o layout não pule */
 }
+
+
+/* ... (todo o código anterior do login_style.css continua igual) ... */
+
+/* ESTILO ADICIONADO PARA O CONTROLE REMOTO */
+.focusable.focused {
+    transform: scale(1.05);
+    border: 3px solid #FFD700; /* Borda amarela forte para destacar */
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.6); /* Brilho amarelo */
+}
+
+/* ... (o resto do código do login_style.css continua igual) ... */
