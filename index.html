@@ -3,13 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DuckFlix - Login</title>
-    <link rel="stylesheet" href="login_style.css">
+    <title>DuckFlix - Carregando...</title> <link rel="stylesheet" href="login_style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
 </head>
 <body>
+
+    <script>
+        // Verifica na "memória" da TV se o login já foi feito
+        if (localStorage.getItem('duckflix_isLoggedIn') === 'true') {
+            // Se sim, substitui a página atual pela home, sem mostrar o login.
+            window.location.replace('home.html');
+        }
+    </script>
     <div class="login-container">
         <h1 class="logo">DuckFlix</h1>
         <form id="login-form">
@@ -19,6 +26,7 @@
         </form>
         <p id="error-message"></p>
     </div>
+    
     <script src="login_script.js"></script>
 </body>
 </html>
