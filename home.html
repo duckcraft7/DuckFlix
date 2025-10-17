@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DuckFlix - Escolha seu clássico</title>
+    <title>DuckFlix - Carregando...</title>
+    
     <link rel="stylesheet" href="style.css">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+    
     <style>
-        /* Estilo para o card de filme em foco (selecionado pelo controle) */
         .movie-card.focused {
-            transform: scale(1.08); /* Aumenta um pouco o tamanho */
-            border: 4px solid #FFD700; /* Borda amarela forte */
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.7); /* Adiciona um brilho amarelo */
+            transform: scale(1.08);
+            border: 4px solid #FFD700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
             z-index: 10;
         }
     </style>
@@ -22,41 +24,11 @@
 
     <header class="main-header">
         <h1>DuckFlix</h1>
-        <p>Sua central de filmes em domínio público e clássicos gratuitos.</p>
+        <p>Seu cinema particular.</p>
     </header>
 
-    <main>
-        <section class="movie-section">
-            <h2>Filmes</h2>
-            <div class="movie-grid">
-                
-                <a class="movie-card" href="player_narnia.html" target="_blank">
-                    <img src="https://ia801002.us.archive.org/14/items/cronicas-de-narnia-01/Cronicas%20de%20Narnia%2001.jpg" alt="Pôster do Filme As Crônicas de Nárnia">
-                    <div class="movie-info">
-                        <h3>Cronicas de Narnia: Leão e a Feiticeira do Guarda Roupa</h3>
-                        <p>2005</p>
-                    </div>
-                </a>
-                
-                <a class="movie-card" href="player_dragao1.html" target="_blank">
-                    <img src="https://ia801005.us.archive.org/15/items/filmes-infantis/Filmes%20Infantis.jpeg" alt="Pôster do Filme As Crônicas de Nárnia">
-                    <div class="movie-info">
-                        <h3>Como treinar o seu dragão 1</h3>
-                        <p>2010</p>
-                    </div>
-                </a>
-                
-                <a class="movie-card" href="player_dragao2.html" target="_blank">
-                    <img src="https://ia800301.us.archive.org/28/items/cartaz-como-treinar-o-seu-dragao-2/Cartaz_%20Como%20Treinar%20o%20Seu%20Dragao%202.jpeg" alt="Pôster do Filme As Crônicas de Nárnia">
-                    <div class="movie-info">
-                        <h3>Como treinar o seu dragão 2</h3>
-                        <p>2014</p>
-                    </div>
-                </a>
-                
-
-            </div>
-        </section>
+    <main id="catalog-container">
+        <h2>Carregando catálogo...</h2>
     </main>
 
     <footer class="main-footer">
@@ -64,86 +36,143 @@
     </footer>
 
     <script>
-        // Espera a página HTML carregar completamente antes de rodar o código.
         document.addEventListener('DOMContentLoaded', () => {
-
-            // Pega todos os cards de filme da página e os coloca em uma lista.
-            const movieCards = document.querySelectorAll('.movie-card');
             
-            // Se não houver filmes na página, não faz nada.
-            if (movieCards.length === 0) {
-                return;
-            }
+            // ---- PASSO 1: DEFINA O LINK PARA SUA LISTA JSON ----
+            // SUBSTITUA PELO SEU LINK "RAW" PÚBLICO (GIST OU REPOSITÓRIO PÚBLICO)
+            const listaUrl = 'https://raw.githubusercontent.com/duckcraft7/Iptv/refs/heads/main/list.json'; 
 
-            // Começamos com o primeiro filme selecionado (índice 0).
-            let currentFocusIndex = 0;
+            const catalogContainer = document.getElementById('catalog-container');
 
-            // Função para definir qual elemento está em foco.
-            const setFocus = (index) => {
-                // Remove o foco do elemento antigo, se houver.
-                movieCards[currentFocusIndex].classList.remove('focused');
-                
-                // Atualiza o índice para o novo elemento.
-                currentFocusIndex = index;
-                
-                // Adiciona a classe .focused ao novo elemento para destacá-lo.
-                movieCards[currentFocusIndex].classList.add('focused');
+            // ---- PASSO 2: BUSCAR E CONSTRUIR O CATÁLOGO ----
+            fetch(listaUrl)
+                .then(response => {
+                    // Verifica se a requisição foi bem sucedida
+                    if (!response.ok) {
+                        throw new Error(`Erro HTTP! status: ${response.status}`);
+                    }
+                    return response.json(); // Converte a resposta para JSON
+                })
+                .then(data => {
+                    catalogContainer.innerHTML = ''; // Limpa a mensagem "Carregando..."
 
-                // Faz a página rolar para que o elemento em foco esteja sempre visível.
-                movieCards[currentFocusIndex].scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
+                    // Itera sobre cada categoria na lista JSON
+                    data.categorias.forEach(categoria => {
+                        // Cria a seção da categoria
+                        const section = document.createElement('section');
+                        section.className = 'movie-section';
+
+                        // Cria o título da categoria
+                        const title = document.createElement('h2');
+                        title.textContent = categoria.titulo;
+                        section.appendChild(title);
+
+                        // Cria a grade para os itens (filmes/séries)
+                        const grid = document.createElement('div');
+                        grid.className = 'movie-grid';
+
+                        // Itera sobre cada item (filme/série) dentro da categoria
+                        categoria.items.forEach(item => {
+                            // Cria o link (card) para o item
+                            const cardLink = document.createElement('a');
+                            cardLink.className = 'movie-card';
+                            cardLink.href = item.playerUrl; // Link para a página do player
+                            cardLink.target = '_blank'; // Abrir em nova aba (opcional para TV)
+
+                            // Preenche o conteúdo do card com HTML
+                            cardLink.innerHTML = `
+                                <img src="${item.poster}" alt="Pôster de ${item.titulo}">
+                                <div class="movie-info">
+                                    <h3>${item.titulo}</h3>
+                                    <p>${item.ano}</p>
+                                </div>
+                            `;
+                            grid.appendChild(cardLink); // Adiciona o card à grade
+                        });
+
+                        section.appendChild(grid); // Adiciona a grade à seção
+                        catalogContainer.appendChild(section); // Adiciona a seção ao container principal
+                    });
+
+                    // ---- PASSO 3: ATIVAR A NAVEGAÇÃO APÓS CARREGAR ----
+                    setupNavigation();
+                })
+                .catch(error => {
+                    // Exibe uma mensagem de erro se não conseguir carregar a lista
+                    console.error('Erro detalhado ao carregar a lista:', error);
+                    catalogContainer.innerHTML = '<h2>Erro ao carregar o catálogo. Verifique o link da lista ou sua conexão.</h2>';
                 });
-            };
 
-            // "Ouvinte" de eventos: fica esperando uma tecla ser pressionada.
-            document.addEventListener('keydown', (event) => {
-                // Pega o número de colunas na grade de filmes para pular linhas corretamente.
-                const grid = document.querySelector('.movie-grid');
-                const gridStyle = window.getComputedStyle(grid);
-                const gridColumnCount = gridStyle.getPropertyValue('grid-template-columns').split(' ').length;
+            // ---- PASSO 4: FUNÇÃO DE NAVEGAÇÃO (COM BOTÃO OK CORRIGIDO) ----
+            function setupNavigation() {
+                const movieCards = document.querySelectorAll('.movie-card');
+                if (movieCards.length === 0) return; // Sai se não houver cards
 
-                switch (event.key) {
-                    case 'ArrowRight':
-                        if (currentFocusIndex < movieCards.length - 1) {
-                            setFocus(currentFocusIndex + 1);
-                        }
-                        break;
-                    case 'ArrowLeft':
-                        if (currentFocusIndex > 0) {
-                            setFocus(currentFocusIndex - 1);
-                        }
-                        break;
-                    case 'ArrowDown':
-                        if (currentFocusIndex + gridColumnCount < movieCards.length) {
-                            setFocus(currentFocusIndex + gridColumnCount);
-                        }
-                        break;
-                    case 'ArrowUp':
-                        if (currentFocusIndex - gridColumnCount >= 0) {
-                            setFocus(currentFocusIndex - gridColumnCount);
-                        }
-                        break;
-                    case 'Enter':
-                        // Se pressionar "Enter" (o botão OK), simula um clique no filme focado.
-                        movieCards[currentFocusIndex].click();
-                        break;
-                }
-            });
+                let currentFocusIndex = 0;
 
-            // Define o foco inicial no primeiro filme quando a página carrega.
-            setFocus(0);
+                const setFocus = (index) => {
+                    // Validação para evitar erros se o índice estiver fora dos limites
+                    if (index < 0 || index >= movieCards.length) return; 
+
+                    movieCards[currentFocusIndex].classList.remove('focused');
+                    currentFocusIndex = index;
+                    movieCards[currentFocusIndex].classList.add('focused');
+                    // Rola a tela suavemente para manter o card focado visível
+                    movieCards[currentFocusIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+                };
+
+                document.addEventListener('keydown', (event) => {
+                    // Previne o comportamento padrão das teclas de seta/Enter
+                    event.preventDefault(); 
+                    
+                    const grid = movieCards[currentFocusIndex].closest('.movie-grid'); // Encontra a grade do card atual
+                    if (!grid) return; // Sai se não encontrar a grade
+                    
+                    const gridStyle = window.getComputedStyle(grid);
+                    const gridColumnCount = gridStyle.getPropertyValue('grid-template-columns').split(' ').length;
+
+                    switch (event.key) {
+                        case 'ArrowRight':
+                            // Move para a direita, mas não sai da linha atual se for o último da linha
+                            const isLastInRow = (currentFocusIndex + 1) % gridColumnCount === 0;
+                            if (currentFocusIndex < movieCards.length - 1 && !isLastInRow) {
+                                setFocus(currentFocusIndex + 1);
+                            } else if (currentFocusIndex < movieCards.length - 1 && isLastInRow) {
+                                // Opcional: Poderia ir para o primeiro da próxima linha, se existir
+                            }
+                            break;
+                        case 'ArrowLeft':
+                             // Move para a esquerda, mas não sai da linha atual se for o primeiro da linha
+                            const isFirstInRow = currentFocusIndex % gridColumnCount === 0;
+                             if (currentFocusIndex > 0 && !isFirstInRow) {
+                                setFocus(currentFocusIndex - 1);
+                             }
+                            break;
+                        case 'ArrowDown':
+                            const targetIndexDown = currentFocusIndex + gridColumnCount;
+                            if (targetIndexDown < movieCards.length) {
+                                setFocus(targetIndexDown);
+                            }
+                            break;
+                        case 'ArrowUp':
+                             const targetIndexUp = currentFocusIndex - gridColumnCount;
+                            if (targetIndexUp >= 0) {
+                                setFocus(targetIndexUp);
+                            }
+                            break;
+                        case 'Enter':
+                            const targetUrl = movieCards[currentFocusIndex].getAttribute('href');
+                            if (targetUrl) {
+                                window.location.href = targetUrl; // Navegação direta
+                            }
+                            break;
+                    }
+                });
+
+                // Define o foco inicial no primeiro card quando a página carrega
+                setFocus(0);
+            }
         });
     </script>
-    </body>
+</body>
 </html>
-
-
-
-
-
-
-
-
-
-
