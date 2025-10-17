@@ -9,12 +9,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
     <style>
-        .movie-card.focused {
-            transform: scale(1.08);
-            border: 4px solid #FFD700;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
-            z-index: 10;
-        }
+        .movie-card.focused { transform: scale(1.08); border: 4px solid #FFD700; box-shadow: 0 0 20px rgba(255, 215, 0, 0.7); z-index: 10; }
+        /* Estilo para barra de progresso (opcional) */
+        .progress-bar { height: 5px; background-color: rgba(255, 255, 255, 0.3); width: 100%; position: absolute; bottom: 0; left: 0; }
+        .progress-bar-inner { height: 100%; background-color: #FFD700; width: 0%; /* Será ajustado pelo JS */ }
+        .movie-card { position: relative; } /* Necessário para a barra de progresso */
     </style>
 </head>
 <body>
@@ -26,7 +25,7 @@
 
     <main id="catalog-container">
         <h2>Carregando catálogo...</h2>
-    </main>
+        </main>
 
     <footer class="main-footer">
         <p>&copy; 2025 DuckFlix. Feito com ❤️ para os amantes de cinema.</p>
@@ -34,16 +33,22 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            
-            // SUBSTITUA PELO SEU LINK DO VERCEL
-            const listaUrl = 'https://duckflix-lista.vercel.app/lista.json'; 
-
+            const listaUrl = 'https://duckflix-lista.vercel.app/lista.json'; // SEU LINK DO VERCEL
             const catalogContainer = document.getElementById('catalog-container');
+            let allItems = []; // Guarda todos os itens para fácil acesso
 
             fetch(listaUrl)
                 .then(response => response.json())
                 .then(data => {
-                    catalogContainer.innerHTML = ''; 
+                    catalogContainer.innerHTML = ''; // Limpa o "Carregando..."
+                    
+                    // Guarda todos os itens para depois
+                    data.categorias.forEach(cat => allItems.push(...cat.items));
+
+                    // ---- CRIA A SEÇÃO "CONTINUAR ASSISTINDO" ----
+                    createContinueWatchingSection();
+
+                    // ---- CRIA AS SEÇÕES NORMAIS DO CATÁLOGO ----
                     data.categorias.forEach(categoria => {
                         const section = document.createElement('section');
                         section.className = 'movie-section';
@@ -54,40 +59,101 @@
                         grid.className = 'movie-grid';
 
                         categoria.items.forEach(item => {
-                            const cardLink = document.createElement('a');
-                            cardLink.className = 'movie-card';
-                            
-                            // ---- A CORREÇÃO ESTÁ AQUI ----
-                            // O nome da chave foi trocado de 'videoLink' para 'videolink' (minúsculo)
-                            const playerLink = `player.html?src=${encodeURIComponent(item.videolink)}&title=${encodeURIComponent(item.titulo)}`;
-                            
-                            cardLink.href = playerLink; 
-                            
-                            cardLink.innerHTML = `
-                                <img src="${item.poster}" alt="Pôster de ${item.titulo}">
-                                <div class="movie-info">
-                                    <h3>${item.titulo}</h3>
-                                    <p>${item.ano}</p>
-                                </div>
-                            `;
+                            const cardLink = createMovieCard(item); // Usa a nova função
                             grid.appendChild(cardLink);
                         });
                         section.appendChild(grid);
                         catalogContainer.appendChild(section);
                     });
+
                     setupNavigation();
                 })
                 .catch(error => {
+                    console.error('Erro:', error);
                     catalogContainer.innerHTML = '<h2>Erro ao carregar o catálogo.</h2>';
                 });
 
-            // A função de navegação continua a mesma
+            // ---- FUNÇÃO PARA CRIAR UM CARD DE FILME ----
+            function createMovieCard(item, savedTime = 0) {
+                const cardLink = document.createElement('a');
+                cardLink.className = 'movie-card';
+                
+                // O link agora SEMPRE inclui o ID, e o tempo se for > 0
+                let playerLink = `player.html?id=${item.id}&src=${encodeURIComponent(item.videoLink)}&title=${encodeURIComponent(item.titulo)}`;
+                if (savedTime > 0) {
+                    playerLink += `&time=${savedTime}`;
+                }
+                cardLink.href = playerLink; 
+
+                cardLink.innerHTML = `
+                    <img src="${item.poster}" alt="Pôster de ${item.titulo}">
+                    <div class="movie-info">
+                        <h3>${item.titulo}</h3>
+                        <p>${item.ano}</p>
+                    </div>
+                    ${savedTime > 0 ? '<div class="progress-bar"><div class="progress-bar-inner"></div></div>' : ''}
+                `;
+
+                // Adiciona a barra de progresso visual (opcional)
+                if (savedTime > 0) {
+                    // Precisaríamos da duração total para calcular a porcentagem exata, 
+                    // por simplicidade, vamos deixar uma barra fixa ou baseada no tempo
+                    const progressBarInner = cardLink.querySelector('.progress-bar-inner');
+                    // Simplesmente mostra que há progresso, sem calcular % exata por enquanto
+                    if(progressBarInner) progressBarInner.style.width = '50%'; 
+                }
+
+                return cardLink;
+            }
+
+            // ---- FUNÇÃO PARA CRIAR A SEÇÃO "CONTINUAR ASSISTINDO" ----
+            function createContinueWatchingSection() {
+                const continueWatchingItems = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key.startsWith('progress_')) {
+                        const itemId = key.replace('progress_', '');
+                        const savedTime = parseFloat(localStorage.getItem(key));
+                        
+                        // Encontra o item correspondente na lista completa
+                        const itemData = allItems.find(item => item.id === itemId);
+
+                        if (itemData && savedTime > 0) {
+                            continueWatchingItems.push({ ...itemData, savedTime });
+                        }
+                    }
+                }
+
+                // Se houver itens para continuar assistindo, cria a seção
+                if (continueWatchingItems.length > 0) {
+                    const section = document.createElement('section');
+                    section.className = 'movie-section continue-watching'; // Classe extra para estilo
+                    const title = document.createElement('h2');
+                    title.textContent = 'Continuar Assistindo';
+                    section.appendChild(title);
+                    const grid = document.createElement('div');
+                    grid.className = 'movie-grid';
+
+                    continueWatchingItems.forEach(item => {
+                        const cardLink = createMovieCard(item, item.savedTime);
+                        grid.appendChild(cardLink);
+                    });
+                    section.appendChild(grid);
+                    // Adiciona a seção NO INÍCIO do container
+                    catalogContainer.prepend(section); 
+                }
+            }
+
+
+            // ---- FUNÇÃO DE NAVEGAÇÃO (Sem alterações significativas) ----
             function setupNavigation() {
-                const movieCards = document.querySelectorAll('.movie-card');
+                // Seleciona TODOS os cards, incluindo os de "Continuar Assistindo"
+                const movieCards = document.querySelectorAll('.movie-card'); 
                 if (movieCards.length === 0) return;
                 let currentFocusIndex = 0;
 
                 const setFocus = (index) => {
+                     if (index < 0 || index >= movieCards.length) return; 
                     movieCards[currentFocusIndex].classList.remove('focused');
                     currentFocusIndex = index;
                     movieCards[currentFocusIndex].classList.add('focused');
@@ -95,7 +161,9 @@
                 };
 
                 document.addEventListener('keydown', (event) => {
-                    event.preventDefault(); 
+                   // A lógica de navegação permanece a mesma...
+                   // (Código das setas e Enter omitido por brevidade, mas é o mesmo de antes)
+                   event.preventDefault(); 
                     const grid = movieCards[currentFocusIndex].closest('.movie-grid');
                     if (!grid) return; 
                     const gridStyle = window.getComputedStyle(grid);
@@ -103,20 +171,30 @@
 
                     switch (event.key) {
                         case 'ArrowRight':
-                            const isLastInRow = (currentFocusIndex + 1) % gridColumnCount === 0;
-                            if (currentFocusIndex < movieCards.length - 1 && !isLastInRow) setFocus(currentFocusIndex + 1);
-                            break;
+                            // Tenta mover para a direita, considerando múltiplas grades
+                            const nextCard = movieCards[currentFocusIndex + 1];
+                            if (nextCard && nextCard.closest('.movie-grid') === grid) { // Só move se estiver na mesma grade
+                                setFocus(currentFocusIndex + 1);
+                            }
+                             break;
                         case 'ArrowLeft':
-                            const isFirstInRow = currentFocusIndex % gridColumnCount === 0;
-                             if (currentFocusIndex > 0 && !isFirstInRow) setFocus(currentFocusIndex - 1);
+                            const prevCard = movieCards[currentFocusIndex - 1];
+                            if (prevCard && prevCard.closest('.movie-grid') === grid) { // Só move se estiver na mesma grade
+                                 setFocus(currentFocusIndex - 1);
+                             }
                             break;
                         case 'ArrowDown':
-                            const targetIndexDown = currentFocusIndex + gridColumnCount;
-                            if (targetIndexDown < movieCards.length) setFocus(targetIndexDown);
+                            // Tenta encontrar o card abaixo na próxima linha ou próxima seção
+                            let targetIndexDown = currentFocusIndex + gridColumnCount;
+                            // Ajuste simples: se não encontrar na mesma coluna, vai para o próximo card disponível
+                            if (targetIndexDown >= movieCards.length) targetIndexDown = movieCards.length - 1; 
+                            setFocus(targetIndexDown);
                             break;
                         case 'ArrowUp':
-                             const targetIndexUp = currentFocusIndex - gridColumnCount;
-                            if (targetIndexUp >= 0) setFocus(targetIndexUp);
+                             let targetIndexUp = currentFocusIndex - gridColumnCount;
+                             // Ajuste simples: se não encontrar na mesma coluna, vai para o card anterior disponível
+                            if (targetIndexUp < 0) targetIndexUp = 0; 
+                            setFocus(targetIndexUp);
                             break;
                         case 'Enter':
                             const targetUrl = movieCards[currentFocusIndex].getAttribute('href');
