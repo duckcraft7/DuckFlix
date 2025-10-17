@@ -5,53 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carregando Player...</title>
     <style>
-        body, html {
-            margin: 0; padding: 0; width: 100%; height: 100%;
-            background-color: #000; overflow: hidden;
-        }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; }
         video { width: 100%; height: 100%; }
     </style>
 </head>
 <body>
 
     <video id="movie-player" controls autoplay>
-        Seu navegador não suporta a tag de vídeo.
-    </video>
+        </video>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const player = document.getElementById('movie-player');
-
-            // --- A MÁGICA ACONTECE AQUI ---
-            // 1. Pega os parâmetros da URL
             const params = new URLSearchParams(window.location.search);
-            const videoSrc = params.get('src'); // Pega o link do vídeo
-            const videoTitle = params.get('title'); // Pega o título
+            const videoSrc = decodeURIComponent(params.get('src')); // Decodifica o link
+            const videoTitle = decodeURIComponent(params.get('title'));
+            const videoId = params.get('id'); // Pega o ID único do filme
+            const startTime = parseFloat(params.get('time') || '0'); // Pega o tempo salvo, ou começa do zero
 
-            // 2. Define o título da página
-            if (videoTitle) {
-                document.title = `Assistindo: ${videoTitle}`;
-            }
-
-            // 3. Define a fonte do vídeo e começa a tocar
+            // Define o título e a fonte
+            if (videoTitle) document.title = `Assistindo: ${videoTitle}`;
             if (videoSrc) {
                 player.src = videoSrc;
-                player.load();
-                player.play();
             } else {
                 console.error("Nenhuma fonte de vídeo foi fornecida!");
-                // Você pode mostrar uma mensagem de erro na tela aqui
+                return; // Sai se não houver vídeo
             }
 
-            // 4. Adiciona o controle de Play/Pause pelo botão OK/Enter
+            // --- LÓGICA DE SALVAR/CARREGAR PROGRESSO ---
+            const storageKey = `progress_${videoId}`; // Chave única para este filme no LocalStorage
+
+            // 1. Tenta pular para o tempo salvo (se houver)
+            // 'loadedmetadata' garante que o vídeo esteja pronto para pular
+            player.addEventListener('loadedmetadata', () => {
+                if (startTime > 0 && startTime < player.duration) {
+                    player.currentTime = startTime;
+                }
+                player.play(); // Garante o autoplay mesmo após pular
+            });
+
+            // 2. Salva o progresso a cada 15 segundos enquanto o vídeo toca
+            let saveInterval = setInterval(() => {
+                if (!player.paused && player.currentTime > 0) {
+                    // Salva apenas se não estiver muito perto do fim (ex: últimos 30 segundos)
+                    if (player.duration - player.currentTime > 30) {
+                        localStorage.setItem(storageKey, player.currentTime.toString());
+                    } else {
+                        // Se estiver perto do fim, remove o progresso salvo
+                        localStorage.removeItem(storageKey);
+                        clearInterval(saveInterval); // Para de salvar
+                    }
+                }
+            }, 15000); // 15000ms = 15 segundos
+
+            // 3. Remove o progresso se o vídeo terminar
+            player.addEventListener('ended', () => {
+                localStorage.removeItem(storageKey);
+                clearInterval(saveInterval);
+            });
+
+            // 4. (Opcional) Salva o progresso quando o usuário fecha a aba/janela
+            window.addEventListener('beforeunload', () => {
+                 if (!player.paused && player.currentTime > 0 && (player.duration - player.currentTime > 30)) {
+                    localStorage.setItem(storageKey, player.currentTime.toString());
+                 }
+            });
+
+            // --- LÓGICA DO CONTROLE REMOTO (PLAY/PAUSE) ---
             document.addEventListener('keydown', (event) => {
                 if (event.key === 'Enter') {
                     event.preventDefault();
-                    if (player.paused) {
-                        player.play();
-                    } else {
-                        player.pause();
-                    }
+                    if (player.paused) player.play();
+                    else player.pause();
                 }
             });
         });
