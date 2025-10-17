@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carregando Player...</title>
+    <style>
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #000; overflow: hidden;
+        }
+        video { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+
+    <video id="movie-player" controls autoplay>
+        Seu navegador não suporta a tag de vídeo.
+    </video>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const player = document.getElementById('movie-player');
+
+            // --- A MÁGICA ACONTECE AQUI ---
+            // 1. Pega os parâmetros da URL
+            const params = new URLSearchParams(window.location.search);
+            const videoSrc = params.get('src'); // Pega o link do vídeo
+            const videoTitle = params.get('title'); // Pega o título
+
+            // 2. Define o título da página
+            if (videoTitle) {
+                document.title = `Assistindo: ${videoTitle}`;
+            }
+
+            // 3. Define a fonte do vídeo e começa a tocar
+            if (videoSrc) {
+                player.src = videoSrc;
+                player.load();
+                player.play();
+            } else {
+                console.error("Nenhuma fonte de vídeo foi fornecida!");
+                // Você pode mostrar uma mensagem de erro na tela aqui
+            }
+
+            // 4. Adiciona o controle de Play/Pause pelo botão OK/Enter
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    if (player.paused) {
+                        player.play();
+                    } else {
+                        player.pause();
+                    }
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
