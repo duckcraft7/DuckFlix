@@ -35,8 +35,8 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             
-            // SUBSTITUA PELO SEU LINK DO VERCEL QUE JÁ FUNCIONA
-            const listaUrl = 'https://duckflix-lista.vercel.app/list.json'; 
+            // SUBSTITUA PELO SEU LINK DO VERCEL
+            const listaUrl = 'https://duckflix-lista.vercel.app/lista.json'; 
 
             const catalogContainer = document.getElementById('catalog-container');
 
@@ -57,12 +57,11 @@
                             const cardLink = document.createElement('a');
                             cardLink.className = 'movie-card';
                             
-                            // ---- A GRANDE MUDANÇA ESTÁ AQUI ----
-                            // Construímos o link para o player.html passando os dados via URL
-                            // encodeURIComponent garante que caracteres especiais não quebrem o link
-                            const playerLink = `player.html?src=${encodeURIComponent(item.videoLink)}&title=${encodeURIComponent(item.titulo)}`;
+                            // ---- A CORREÇÃO ESTÁ AQUI ----
+                            // O nome da chave foi trocado de 'videoLink' para 'videolink' (minúsculo)
+                            const playerLink = `player.html?src=${encodeURIComponent(item.videolink)}&title=${encodeURIComponent(item.titulo)}`;
                             
-                            cardLink.href = playerLink; // O link agora aponta para o player genérico
+                            cardLink.href = playerLink; 
                             
                             cardLink.innerHTML = `
                                 <img src="${item.poster}" alt="Pôster de ${item.titulo}">
@@ -82,7 +81,7 @@
                     catalogContainer.innerHTML = '<h2>Erro ao carregar o catálogo.</h2>';
                 });
 
-            // A função de navegação continua a mesma (com o 'Enter' corrigido)
+            // A função de navegação continua a mesma
             function setupNavigation() {
                 const movieCards = document.querySelectorAll('.movie-card');
                 if (movieCards.length === 0) return;
