@@ -1,9 +1,9 @@
 // --- ÁREA DE CONFIGURAÇÃO DE CLIENTES ---
 const USUARIOS_VALIDOS = {
     "familia": "marique10",
-    "joao_silva": "abc@456",
-    "maria_souza": "minhasenha_forte",
-    "usuario_teste": "12345"
+    "client01": "5434",
+    "client02": "9897",
+    "clint03": "4554"
 };
 // -----------------------------------------
 
