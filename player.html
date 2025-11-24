@@ -1,86 +1,84 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carregando Player...</title>
-    <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; }
-        video { width: 100%; height: 100%; }
-    </style>
-</head>
-<body>
+<script>
+    // =========================================================
+    // === CONFIGURAÇÕES GLOBAIS ===
+    // =========================================================
+    // Sua URL de catálogo confirmada no Vercel
+    const listaUrl = '**https://duckflix-lista.vercel.app/lista.json**'; 
+    
+    // Nome da chave usada no localStorage (para verificar se o usuário está logado)
+    const AUTH_KEY = 'duckflix_auth_pin';
+    const LOGIN_PAGE = 'index.html'; 
 
-    <video id="movie-player" controls autoplay>
-        </video>
+    // =========================================================
+    // === FUNÇÃO DE BUSCA E EMBUTIMENTO DO VÍDEO ===
+    // =========================================================
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const player = document.getElementById('movie-player');
-            const params = new URLSearchParams(window.location.search);
-            const videoSrc = decodeURIComponent(params.get('src')); // Decodifica o link
-            const videoTitle = decodeURIComponent(params.get('title'));
-            const videoId = params.get('id'); // Pega o ID único do filme
-            const startTime = parseFloat(params.get('time') || '0'); // Pega o tempo salvo, ou começa do zero
+    // Função para extrair o ID do filme da URL (ex: "narnia1" de "?id=narnia1")
+    function getMovieIdFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('id');
+    }
+    
+    // Função principal que carrega o filme
+    async function loadPlayer() {
+        const movieId = getMovieIdFromUrl();
+        const titleElement = document.getElementById('movie-title');
+        const videoElement = document.getElementById('video-tag');
+        const messageElement = document.getElementById('loading-message');
 
-            // Define o título e a fonte
-            if (videoTitle) document.title = `Assistindo: ${videoTitle}`;
-            if (videoSrc) {
-                player.src = videoSrc;
+        // 🚨 Segurança: Se a sessão não estiver salva, redireciona para o login
+        if (!localStorage.getItem(AUTH_KEY)) {
+            window.location.href = LOGIN_PAGE;
+            return;
+        }
+
+        if (!movieId) {
+            titleElement.textContent = 'Erro: Filme não especificado.';
+            messageElement.textContent = 'Retorne ao catálogo para selecionar um filme.';
+            return;
+        }
+
+        try {
+            // 1. Busca a lista de filmes do Vercel
+            const response = await fetch(listaUrl);
+            if (!response.ok) throw new Error('Falha ao buscar catálogo. Código: ' + response.status);
+            const data = await response.json();
+
+            // 2. Procura o filme pelo ID em todas as categorias
+            let movieItem = null;
+            data.categorias.forEach(categoria => {
+                const found = categoria.items.find(item => item.id === movieId);
+                if (found) {
+                    movieItem = found;
+                }
+            });
+
+            if (movieItem) {
+                titleElement.textContent = movieItem.titulo;
+                messageElement.style.display = 'none'; 
+                
+                // 3. Imbuti o link de vídeo (MP4) na tag <video>
+                videoElement.src = movieItem.videoLink;
+                videoElement.poster = movieItem.poster; 
+                videoElement.load(); 
+                
+                // Tenta iniciar a reprodução automaticamente (pode ser bloqueado)
+                videoElement.play().catch(e => console.log("Auto-play bloqueado. O usuário deve clicar play.")); 
+
             } else {
-                console.error("Nenhuma fonte de vídeo foi fornecida!");
-                return; // Sai se não houver vídeo
+                titleElement.textContent = 'Erro: Filme não encontrado no catálogo.';
+                messageElement.textContent = `ID do filme (${movieId}) não encontrado na lista.json.`;
             }
 
-            // --- LÓGICA DE SALVAR/CARREGAR PROGRESSO ---
-            const storageKey = `progress_${videoId}`; // Chave única para este filme no LocalStorage
+        } catch (error) {
+            console.error('Erro ao carregar o player:', error);
+            titleElement.textContent = 'Falha crítica ao carregar o player.';
+            messageElement.textContent = `Detalhes: ${error.message}.`;
+        }
+    }
 
-            // 1. Tenta pular para o tempo salvo (se houver)
-            // 'loadedmetadata' garante que o vídeo esteja pronto para pular
-            player.addEventListener('loadedmetadata', () => {
-                if (startTime > 0 && startTime < player.duration) {
-                    player.currentTime = startTime;
-                }
-                player.play(); // Garante o autoplay mesmo após pular
-            });
-
-            // 2. Salva o progresso a cada 15 segundos enquanto o vídeo toca
-            let saveInterval = setInterval(() => {
-                if (!player.paused && player.currentTime > 0) {
-                    // Salva apenas se não estiver muito perto do fim (ex: últimos 30 segundos)
-                    if (player.duration - player.currentTime > 30) {
-                        localStorage.setItem(storageKey, player.currentTime.toString());
-                    } else {
-                        // Se estiver perto do fim, remove o progresso salvo
-                        localStorage.removeItem(storageKey);
-                        clearInterval(saveInterval); // Para de salvar
-                    }
-                }
-            }, 15000); // 15000ms = 15 segundos
-
-            // 3. Remove o progresso se o vídeo terminar
-            player.addEventListener('ended', () => {
-                localStorage.removeItem(storageKey);
-                clearInterval(saveInterval);
-            });
-
-            // 4. (Opcional) Salva o progresso quando o usuário fecha a aba/janela
-            window.addEventListener('beforeunload', () => {
-                 if (!player.paused && player.currentTime > 0 && (player.duration - player.currentTime > 30)) {
-                    localStorage.setItem(storageKey, player.currentTime.toString());
-                 }
-            });
-
-            // --- LÓGICA DO CONTROLE REMOTO (PLAY/PAUSE) ---
-            document.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
-                    if (player.paused) player.play();
-                    else player.pause();
-                }
-            });
-        });
-    </script>
-
-</body>
-</html>
+    // =========================================================
+    // === INICIALIZAÇÃO ===
+    // =========================================================
+    document.addEventListener('DOMContentLoaded', loadPlayer);
+</script>
