@@ -12,6 +12,7 @@
         .logout-button:hover { background-color: #990000; }
         /* FOCO PARA O CONTROLE REMOTO */
         .movie-card.focused { transform: scale(1.08); border: 4px solid #FFD700; box-shadow: 0 0 20px rgba(255, 215, 0, 0.7); z-index: 10; }
+        /* Adicione estilos para a grade (Ex: display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px;) */
     </style>
 </head>
 <body>
@@ -57,7 +58,7 @@
         }
 
         // =========================================================
-        // === 3. CARREGAMENTO DO CATÁLOGO (ADAPTADO À SUA LISTA) ===
+        // === 3. CARREGAMENTO DO CATÁLOGO (CORRIGIDO PARA SUA LISTA) ===
         // =========================================================
         function carregarCatalogo() {
             fetch(listaUrl)
@@ -69,8 +70,14 @@
                 })
                 .then(data => {
                     const catalogContainer = document.getElementById('catalog-container');
-                    catalogContainer.innerHTML = '';
                     
+                    // Se o ID 'catalog-container' estiver faltando, esta linha pode falhar silenciosamente no celular.
+                    if (!catalogContainer) {
+                        throw new Error("Erro: Elemento 'catalog-container' não encontrado no HTML.");
+                    }
+
+                    catalogContainer.innerHTML = ''; // Limpa o conteúdo
+
                     data.categorias.forEach(categoria => {
                         const section = document.createElement('section');
                         section.className = 'movie-section';
@@ -84,8 +91,10 @@
                         categoria.items.forEach(item => {
                             const cardLink = document.createElement('a');
                             cardLink.className = 'movie-card';
-                            cardLink.href = item.videoLink; // Usando 'videoLink'
-                            cardLink.target = '_blank'; // Abre o player em uma nova aba
+                            
+                            // 🔑 CORREÇÃO: Aponta para o player.html, passando o ID
+                            cardLink.href = `player.html?id=${item.id}`; 
+                            cardLink.target = '_self'; // Abre na mesma aba
 
                             cardLink.innerHTML = `
                                 <img src="${item.poster}" alt="Pôster de ${item.titulo}">
@@ -105,7 +114,7 @@
                 })
                 .catch(error => {
                     console.error('Erro de carregamento:', error);
-                    document.getElementById('catalog-container').innerHTML = `<h2>Falha crítica: ${error.message}</h2><p>Tente novamente ou verifique as configurações.</p>`;
+                    document.getElementById('catalog-container').innerHTML = `<h2>Falha ao carregar catálogo: ${error.message}</h2>`;
                 });
         }
         
