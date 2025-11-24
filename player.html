@@ -28,58 +28,65 @@
     </div>
 
     <script>
-        // Configurações (A mesma URL de lista do seu home.html)
-        const listaUrl = '**https://duckflix-lista.vercel.app/lista.json**'; 
+        // =========================================================
+        // === CONFIGURAÇÕES E SESSÃO ===
+        // =========================================================
+        const AUTH_KEY = 'duckflix_auth_pin';
+        const LOGIN_PAGE = 'index.html';
 
-        // Função para extrair o ID da URL (ex: "narnia1" de "?id=narnia1")
-        function getMovieIdFromUrl() {
-            const params = new URLSearchParams(window.location.search);
-            return params.get('id');
+        // 1. Função para extrair parâmetros da URL
+        function getQueryParams() {
+            const params = {};
+            const search = window.location.search.substring(1);
+            const parts = search.split('&');
+            
+            parts.forEach(part => {
+                const [key, value] = part.split('=');
+                // Decodifica os valores que foram passados como URI
+                params[key] = decodeURIComponent(value || '');
+            });
+            return params;
         }
 
-        async function loadPlayer() {
-            const movieId = getMovieIdFromUrl();
+        // 2. Função principal que carrega o player
+        function loadPlayer() {
+            const params = getQueryParams();
+            const movieTitle = params.title;
+            const videoLink = params.video; // O link do MP4 do Archive.org
+
             const titleElement = document.getElementById('movie-title');
             const videoElement = document.getElementById('video-tag');
             const messageElement = document.getElementById('loading-message');
 
-            if (!movieId) {
-                titleElement.textContent = 'Erro: Filme não especificado.';
-                messageElement.textContent = 'Retorne ao catálogo para selecionar um filme.';
+            // 🚨 Segurança: Checagem da sessão 
+            if (!localStorage.getItem(AUTH_KEY)) {
+                window.location.href = LOGIN_PAGE;
+                return;
+            }
+
+            if (!movieTitle || !videoLink) {
+                titleElement.textContent = 'Falha Crítica no Carregamento.';
+                messageElement.textContent = 'Detalhes do filme ausentes na URL. Retorne ao catálogo.';
                 return;
             }
 
             try {
-                // 1. Busca a lista de filmes do Vercel
-                const response = await fetch(listaUrl);
-                if (!response.ok) throw new Error('Falha ao buscar catálogo.');
-                const data = await response.json();
-
-                // 2. Procura o filme pelo ID em todas as categorias
-                let movieItem = null;
-                data.categorias.forEach(categoria => {
-                    const found = categoria.items.find(item => item.id === movieId);
-                    if (found) {
-                        movieItem = found;
-                    }
+                // Injeta os dados na página, sem necessidade de FETCH
+                titleElement.textContent = movieTitle;
+                messageElement.style.display = 'none'; 
+                
+                // Configura o elemento <video>
+                videoElement.src = videoLink; 
+                videoElement.load(); 
+                
+                videoElement.play().catch(e => {
+                    console.log("Auto-play bloqueado pelo navegador.");
                 });
 
-                if (movieItem) {
-                    titleElement.textContent = movieItem.titulo;
-                    messageElement.style.display = 'none'; // Esconde a mensagem
-                    
-                    // 3. Imbuti o link de download direto na tag <video>
-                    videoElement.src = movieItem.videoLink;
-                    videoElement.poster = movieItem.poster; // Define o pôster
-                    videoElement.load(); // Inicia o carregamento
-                } else {
-                    titleElement.textContent = 'Erro: Filme não encontrado no catálogo.';
-                }
-
             } catch (error) {
-                console.error('Erro ao carregar o player:', error);
-                titleElement.textContent = 'Falha crítica ao carregar o player.';
-                messageElement.textContent = `Detalhes: ${error.message}. Verifique a URL e o CORS do Vercel.`;
+                console.error('Erro ao configurar o player:', error);
+                titleElement.textContent = 'Erro de Configuração do Player.';
+                messageElement.textContent = `Ocorreu um erro interno.`;
             }
         }
 
