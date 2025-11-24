@@ -142,5 +142,39 @@
                 
                 let nextIndex = currentFocusIndex;
                 
-                switch (event.key
+                switch (event.key) {
+                    case 'ArrowRight':
+                        nextIndex = currentFocusIndex + 1;
+                        break;
+                    case 'ArrowLeft':
+                        nextIndex = currentFocusIndex - 1;
+                        break;
+                    case 'ArrowDown':
+                        nextIndex = currentFocusIndex + gridColumnCount;
+                        break;
+                    case 'ArrowUp':
+                        nextIndex = currentFocusIndex - gridColumnCount;
+                        break;
+                    case 'Enter':
+                        movieCards[currentFocusIndex].click();
+                        return;
+                }
+                
+                if (nextIndex >= 0 && nextIndex < movieCards.length) {
+                    setFocus(nextIndex);
+                }
+            });
+            setFocus(0);
+        }
 
+        // =========================================================
+        // === INICIALIZAÇÃO DO APP ===
+        // =========================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            if (checkSession()) {
+                carregarCatalogo(); 
+            }
+        });
+    </script>
+</body>
+</html>
