@@ -6,13 +6,13 @@
     <title>DuckFlix - Login</title>
     <link rel="stylesheet" href="style.css"> 
     <style>
-        /* Estilos específicos para a tela de login */
+        /* Estilos específicos para a tela de login (apenas para referência) */
         body {
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background-color: #000000; /* Fundo preto */
+            background-color: #000000;
         }
         .login-box {
             background-color: #111111;
@@ -22,7 +22,7 @@
             width: 400px;
         }
         .login-box h1 {
-            color: #FFD700; /* Amarelo da sua marca */
+            color: #FFD700;
             margin-bottom: 30px;
             font-size: 3em;
         }
@@ -76,15 +76,20 @@
         const SUPABASE_URL = 'https://ryqyzeprooluwzyixszk.supabase.co'; // <-- SUBSTITUA AQUI!
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5cXl6ZXByb29sdXd6eWl4c3prIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MzgzMjYsImV4cCI6MjA3OTUxNDMyNn0.FkxaERFPO3KamSmmvY7UjYsA9w-mL8c19y5P1zLDnzM'; // <-- SUBSTITUA AQUI!
 
-        const LOGIN_SUCCESS_PAGE = 'home.html'; // Página para onde redirecionar após o login
+        const LOGIN_SUCCESS_PAGE = 'home.html'; 
+        const AUTH_KEY = 'duckflix_auth_pin'; // Chave usada no localStorage
 
         // =========================================================
         // === LÓGICA DE VERIFICAÇÃO ===
         // =========================================================
 
+        // Tenta logar automaticamente se o usuário já tem um PIN salvo
+        if (localStorage.getItem(AUTH_KEY)) {
+            window.location.href = LOGIN_SUCCESS_PAGE;
+        }
+
         async function verificarPin(pin) {
             try {
-                // Monta a URL para verificar se o PIN existe e está ativo
                 const url = `${SUPABASE_URL}/rest/v1/tokens_ativos?pin=eq.${pin}&status=eq.ativo&select=pin`;
                 
                 const response = await fetch(url, {
@@ -96,12 +101,11 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error('Erro na comunicação com o servidor. Tente novamente.');
+                    throw new Error('Erro na comunicação com o servidor.');
                 }
 
                 const data = await response.json();
                 
-                // Retorna true se houver pelo menos um resultado (PIN encontrado e ativo)
                 return data.length > 0; 
             } catch (error) {
                 console.error('Erro de rede ou servidor:', error);
@@ -110,7 +114,7 @@
         }
 
         document.getElementById('login-form').addEventListener('submit', async (event) => {
-            event.preventDefault(); // Impede o recarregamento da página
+            event.preventDefault();
             
             const pinInput = document.getElementById('pin');
             const messageElement = document.getElementById('login-message');
@@ -123,17 +127,17 @@
 
             messageElement.textContent = 'Verificando PIN...';
 
-            // Chama a função de verificação segura
             const isValido = await verificarPin(pin);
 
             if (isValido) {
                 messageElement.textContent = 'Login OK! Redirecionando...';
                 
-                // Guarda o status de login para evitar que o usuário tenha que logar de novo
-                // Note: Em um app real, o token seria guardado aqui, mas para este projeto simples, faremos o redirecionamento.
+                // 🔑 PASSO CRÍTICO DO SALVAMENTO: SALVA A SESSÃO NO ARMAZENAMENTO LOCAL
+                localStorage.setItem(AUTH_KEY, pin);
+                
                 window.location.href = LOGIN_SUCCESS_PAGE; 
             } else {
-                pinInput.value = ''; // Limpa o campo
+                pinInput.value = '';
                 messageElement.textContent = 'PIN Inválido ou Assinatura Expirada. Tente novamente.';
             }
         });
